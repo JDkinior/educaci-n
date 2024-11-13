@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'student_page.dart';  // Ventana de estudiante
-import 'teacher_page.dart';  // Ventana de profesor
+import 'student_page.dart'; // Ventana de estudiante
+import 'teacher_page.dart'; // Ventana de profesor
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,10 +12,12 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String _role = 'Estudiante';
+
+  bool _isLoginMode = true;
 
   Future<void> _register() async {
     try {
@@ -23,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      
+
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'role': _role,
         'email': _emailController.text,
@@ -68,41 +70,51 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
+      appBar: AppBar(title: Text(_isLoginMode ? 'Iniciar Sesión' : 'Registro')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
+              decoration: const InputDecoration(labelText: 'Contraseña'),
               obscureText: true,
             ),
-            DropdownButton<String>(
-              value: _role,
-              items: <String>['Estudiante', 'Profesor'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (newValue) {
+            if (!_isLoginMode)
+              DropdownButton<String>(
+                value: _role,
+                items: <String>['Estudiante', 'Profesor'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    _role = newValue!;
+                  });
+                },
+              ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _isLoginMode ? _login : _register,
+              child: Text(_isLoginMode ? 'Iniciar Sesión' : 'Registrarse'),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
                 setState(() {
-                  _role = newValue!;
+                  _isLoginMode = !_isLoginMode;
                 });
               },
-            ),
-            ElevatedButton(
-              onPressed: _register,
-              child: Text('Registrarse'),
-            ),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text('Iniciar Sesión'),
+              child: Text(_isLoginMode
+                  ? '¿No tienes cuenta? Créala aquí'
+                  : '¿Ya tienes cuenta? Inicia sesión aquí'),
             ),
           ],
         ),

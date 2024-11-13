@@ -1,11 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'firebase_options.dart';  // Este archivo se generará en el próximo paso
-import 'login_page.dart';       // Tu archivo de login
+import 'firebase_options.dart';  // Este archivo debe estar correctamente configurado
+import 'login_page.dart';       // Asegúrate de tener un archivo `login_page.dart` correctamente configurado
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    print('Error initializing Firebase: $e');  // Añade un log para capturar errores en la inicialización
+  }
   runApp(MyApp());
 }
 
